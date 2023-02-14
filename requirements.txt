@@ -1,0 +1,5 @@
+Flask
+pandas
+pymongo
+python_nmap
+redis

@@ -1,0 +1,11 @@
+import os
+
+LISTEN_ADDR = os.getenv('LISTEN_ADDR')
+LISTEN_PORT = int(os.getenv('LISTEN_PORT'))
+APP_DEBUG = eval(os.getenv('APP_DEBUG'))
+MONGODB_URI = os.getenv('MONGODB_URI')
+MONGODB_NAME = os.getenv('MONGODB_NAME')
+MONGODB_COLLECTION = os.getenv('MONGODB_COLLECTION')
+REDIS_URI = os.getenv('REDIS_URI')
+MIN_RESCAN_TIME = int(os.getenv('MIN_RESCAN_TIME'))
+NMAP_ARGUMENTS = os.getenv('NMAP_ARGUMENTS')
