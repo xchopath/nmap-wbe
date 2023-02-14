@@ -35,3 +35,9 @@ GET /api/portscan/result/all
 ```
 GET /api/portscan/result/<host>
 ```
+
+## F.A.Q
+
+- Can connect to existing Redis & MongoDB?
+
+Yes It can, adjust `docker-compose.yml` by removing from the stage and adjust `.env`.
