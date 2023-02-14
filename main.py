@@ -83,6 +83,7 @@ def scan(host):
 def allresult():
     try:
         result = mongo_collection.find()
+        result = list(result)
         if result is None:
             return jsonify({'status': None, 'data': 'is empty'}), 200
         return jsonify(result), 200
