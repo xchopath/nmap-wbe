@@ -5,7 +5,7 @@ import logging
 import sys
 import traceback
 
-LOGGING_LEVEL = os.getenv('LOGGING_LEVEL')
+LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'DEBUG')
 
 try:
 	logger = logging.getLogger()
