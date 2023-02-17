@@ -3,3 +3,4 @@ pandas
 pymongo
 python_nmap
 redis
+ipaddress
