@@ -10,6 +10,8 @@ import redis
 import threading
 import time
 import datetime
+import ipaddress
+import random
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
@@ -19,6 +21,13 @@ redis_connect = redis.Redis.from_url(REDIS_URI)
 mongo_client = MongoClient(MONGODB_URI)
 mongodb = mongo_client[MONGODB_NAME]
 mongo_collection = mongodb[MONGODB_COLLECTION]
+
+def validate_ip(host):
+    try:
+        ip_object = ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        return False
 
 def getcache(host):
     try:
@@ -77,7 +86,7 @@ def scan(host):
         return jsonify({'host': host, 'status': 'started'}), 200
     except Exception:
         logger.error(traceback.format_exc())
-        return jsonify({'error': 500, 'message': 'please contact the administrator'}), 500
+        return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
 
 @app.route('/api/portscan/result/all', methods=['GET'])
 def allresult():
@@ -89,7 +98,7 @@ def allresult():
         return jsonify(result), 200
     except Exception:
         logger.error(traceback.format_exc())
-        return jsonify({'error': 500, 'message': 'please contact the administrator'}), 500
+        return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
 
 @app.route('/api/portscan/result/<host>', methods=['GET'])
 def singleresult(host):
@@ -100,7 +109,39 @@ def singleresult(host):
         return jsonify({'host': host, 'data': result['data']}), 200
     except Exception:
         logger.error(traceback.format_exc())
-        return jsonify({'error': 500, 'message': 'please contact the administrator'}), 500
+        return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
+
+@app.route('/api/portscan/agent/assign/<host>', methods=['GET'])
+def agentassigntask(host):
+    try:
+        if not validate_ip(host) == True:
+            return jsonify({'status': 400, 'message': '{} invalid ip address'.format(host)}), 400
+        redis_connect.sadd("agent:tasklist", host)
+        return jsonify({'status': 200, 'message': '{} has been assigned'.format(host)}), 200
+    except Exception:
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
+
+@app.route('/api/portscan/agent/task', methods=['GET'])
+def agenttask():
+    try:
+        tasklist = [ str(row, 'utf-8') for row in redis_connect.smembers("agent:tasklist") ]
+        taskhost = random.choice(tasklist)
+        redis_connect.srem("agent:tasklist", taskhost)
+        return jsonify({'host': taskhost}), 200
+    except Exception:
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 400, 'message': 'could not read any single task'}), 400 
+
+@app.route('/api/portscan/agent/submitreport/<host>', methods=['POST'])
+def agentsubmitreport(host):
+    request_data = request.get_json()
+    print(request_data)
+    result = request_data
+    data = {'_id': host, 'data': result}
+    mongo_collection.update_one({"_id": host}, {"$set": data}, upsert=True)
+    logger.info('Update {} successfully'.format(host))
+    return jsonify({'host': host, 'message': 'update successfully'}), 200
 
 if __name__ == '__main__':
     app.run(host=LISTEN_ADDR, port=LISTEN_PORT, debug=APP_DEBUG)
