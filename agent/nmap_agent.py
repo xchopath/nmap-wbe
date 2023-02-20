@@ -55,7 +55,6 @@ if TARGET == None:
 
 try:
 	scan_result = NmapPortScan(TARGET)
-    logger.info('scanning {}...'.format(TARGET))
 	r = requests.post('{API_NMAP_WBE}/api/portscan/agent/submitreport/{TARGET}'.format(API_NMAP_WBE=API_NMAP_WBE, TARGET=TARGET), json=scan_result)
 	logger.info('success {} updated!'.format(TARGET))
 except Exception:
