@@ -19,15 +19,15 @@ API_NMAP_WBE = os.getenv('API_NMAP_WBE', 'http://localhost:5000')
 TARGET = os.getenv('TARGET', None)
 
 try:
-	logger = logging.getLogger()
-	logger.setLevel(LOGGING_LEVEL)
-	formatter = logging.Formatter('[%(asctime)s] %(levelname)s: {%(filename)s:%(lineno)d} - %(message)s')
-	handler = logging.StreamHandler(sys.stdout)
-	handler.setFormatter(formatter)
-	logger.addHandler(handler)
+    logger = logging.getLogger()
+    logger.setLevel(LOGGING_LEVEL)
+    formatter = logging.Formatter('[%(asctime)s] %(levelname)s: {%(filename)s:%(lineno)d} - %(message)s')
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 except Exception:
-	print('ERROR! logger was not working', traceback.format_exc())
-	exit()
+    print('ERROR! logger was not working', traceback.format_exc())
+    exit()
 
 def NmapPortScan(host):
     try:
@@ -54,8 +54,9 @@ if TARGET == None:
     exit()
 
 try:
-	scan_result = NmapPortScan(TARGET)
-	r = requests.post('{API_NMAP_WBE}/api/portscan/agent/submitreport/{TARGET}'.format(API_NMAP_WBE=API_NMAP_WBE, TARGET=TARGET), json=scan_result)
-	logger.info('success {} updated!'.format(TARGET))
+    logger.info('Scanning {}...'.format(TARGET))
+    scan_result = NmapPortScan(TARGET)
+    r = requests.post('{API_NMAP_WBE}/api/portscan/agent/submitreport/{TARGET}'.format(API_NMAP_WBE=API_NMAP_WBE, TARGET=TARGET), json=scan_result)
+    logger.info('Success: {}'.format(r.text))
 except Exception:
-	print('FAIL! {}'.format(TARGET))
+    print('FAIL! {}'.format(TARGET))
