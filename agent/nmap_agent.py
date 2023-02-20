@@ -59,4 +59,4 @@ try:
     r = requests.post('{API_NMAP_WBE}/api/portscan/agent/submitreport/{TARGET}'.format(API_NMAP_WBE=API_NMAP_WBE, TARGET=TARGET), json=scan_result)
     logger.info('Success: {}'.format(r.text))
 except Exception:
-    print('FAIL! {}'.format(TARGET))
+    logger.error('FAILED! {}'.format(TARGET))
