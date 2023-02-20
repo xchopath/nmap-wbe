@@ -55,7 +55,7 @@ if TARGET == None:
 
 try:
 	scan_result = NmapPortScan(TARGET)
-	r = requests.post('http://127.0.0.1:5002/api/portscan/agent/submitreport/{}'.format(TARGET), json=scan_result)
+	r = requests.post('{API_NMAP_WBE}/api/portscan/agent/submitreport/{TARGET}'.format(API_NMAP_WBE=API_NMAP_WBE, TARGET=TARGET), json=scan_result)
 	print(r.json())
 except Exception:
 	print('FAIL! {}'.format(TARGET))
