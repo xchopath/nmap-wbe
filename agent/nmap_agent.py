@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Sample command to use:
-# API_NMAP_WBE=http://localhost:5000 TARGET=45.33.32.156 LOGGING_LEVEL=DEBUG python nmap_agent.py
+# API_NMAP_WBE=http://localhost:5000 LOGGING_LEVEL=DEBUG python nmap_agent.py
 
 import nmap
 import os
@@ -16,7 +16,6 @@ import requests
 LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'DEBUG')
 NMAP_ARGUMENTS = '-p - -Pn -T4 -sV --open'
 API_NMAP_WBE = os.getenv('API_NMAP_WBE', 'http://localhost:5000')
-TARGET = os.getenv('TARGET', None)
 
 try:
     logger = logging.getLogger()
@@ -49,11 +48,9 @@ def NmapPortScan(host):
         logger.error(traceback.format_exc())
         return None
 
-if TARGET == None:
-    logger.error('TARGET is empty!')
-    exit()
-
 try:
+    get = requests.get('{API_NMAP_WBE}/api/portscan/agent/task'.format(API_NMAP_WBE=API_NMAP_WBE))
+    TARGET = get.json()['host']
     logger.info('Scanning {}...'.format(TARGET))
     scan_result = NmapPortScan(TARGET)
     r = requests.post('{API_NMAP_WBE}/api/portscan/agent/submitreport/{TARGET}'.format(API_NMAP_WBE=API_NMAP_WBE, TARGET=TARGET), json=scan_result)
