@@ -38,7 +38,7 @@ services:
     container_name: nmap-wbe
     restart: always
     ports:
-      - 5000:5000
+      - 5001:5001
     environment:
       - LISTEN_ADDR=${LISTEN_ADDR}
       - LISTEN_PORT=${LISTEN_PORT}
