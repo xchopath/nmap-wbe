@@ -20,7 +20,6 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 redis_connect = redis.Redis.from_url(REDIS_URI)
 mongo_client = MongoClient(MONGODB_URI)
 mongodb = mongo_client[MONGODB_NAME]
-mongo_collection = mongodb[MONGODB_COLLECTION]
 
 def validate_ip(host):
     try:
@@ -52,7 +51,7 @@ def Scan_Worker(host):
         try:
             result = NmapPortScan(host)
             data = {'_id': host, 'data': result}
-            mongo_collection.update_one({"_id": host}, {"$set": data}, upsert=True)
+            mongodb['openport'].update_one({"_id": host}, {"$set": data}, upsert=True)
             logger.info('Scan {} successfully'.format(host))
             pass
         except Exception:
@@ -79,7 +78,7 @@ def scan(host):
         host = host
         smembers = [ str(row, 'utf-8') for row in redis_connect.smembers("running") ]
         if host in smembers:
-            return jsonify({'host': host, 'status': 'still scanning'}), 200
+            return jsonify({'host': host, 'status': 'scanning'}), 200
         redis_connect.sadd("running", host)
         scan_thread = threading.Thread(target=Scan_Worker, name="nmap_scan", args=(host,))
         scan_thread.start()
@@ -88,25 +87,26 @@ def scan(host):
         logger.error(traceback.format_exc())
         return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
 
-@app.route('/api/portscan/result/all', methods=['GET'])
-def allresult():
+@app.route('/api/portscan/result/<host>', methods=['GET'])
+def singleresult(host):
     try:
-        result = mongo_collection.find()
-        result = list(result)
+        result = mongodb['openport'].find_one({"_id": host})
         if result is None:
-            return jsonify({'status': None, 'data': 'is empty'}), 200
-        return jsonify(result), 200
+            return jsonify({'host': host, 'data': None}), 200
+        return jsonify({'host': host, 'data': result['data']}), 200
     except Exception:
         logger.error(traceback.format_exc())
         return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
 
-@app.route('/api/portscan/result/<host>', methods=['GET'])
-def singleresult(host):
+@app.route('/api/portscan/list', methods=['GET'])
+def allresult():
     try:
-        result = mongo_collection.find_one({"_id": host})
+        result = mongodb['openport'].find({}, {'_id': True, 'data': False})
+        result = list(result)
         if result is None:
-            return jsonify({'host': host, 'data': None}), 200
-        return jsonify({'host': host, 'data': result['data']}), 200
+            return jsonify({'status': None, 'data': 'is empty'}), 200
+        data = [ row['_id'] for row in result ]
+        return jsonify(data), 200
     except Exception:
         logger.error(traceback.format_exc())
         return jsonify({'status': 500, 'message': 'please contact the administrator'}), 500
@@ -133,13 +133,13 @@ def agenttask():
         logger.error(traceback.format_exc())
         return jsonify({'status': 400, 'message': 'could not read any single task'}), 400 
 
-@app.route('/api/portscan/agent/submitreport/<host>', methods=['POST'])
+@app.route('/api/portscan/agent/submit/<host>', methods=['POST'])
 def agentsubmitreport(host):
     request_data = request.get_json()
     print(request_data)
     result = request_data
     data = {'_id': host, 'data': result}
-    mongo_collection.update_one({"_id": host}, {"$set": data}, upsert=True)
+    mongodb['openport'].update_one({"_id": host}, {"$set": data}, upsert=True)
     logger.info('Update {} successfully'.format(host))
     return jsonify({'host': host, 'message': 'update successfully'}), 200
 

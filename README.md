@@ -17,7 +17,7 @@ sudo docker-compose up -d
 
 ## API Documentation
 
-This environment will run at port `5000` with these endpoints below.
+This environment will run at port `5001` with these endpoints below.
 
 ### Endpoint
 
@@ -28,14 +28,14 @@ This environment will run at port `5000` with these endpoints below.
 GET /api/portscan/scan/<host>
 ```
 
-2. Show all results
-```
-GET /api/portscan/result/all
-```
-
-3. Show the result
+2. Show the result
 ```
 GET /api/portscan/result/<host>
+```
+
+3. Show all results
+```
+GET /api/portscan/list
 ```
 
 #### Agent
@@ -56,7 +56,7 @@ GET /api/portscan/agent/task
 
 2. Submit report
 ```
-POST /api/portscan/agent/submitreport/<host>
+POST /api/portscan/agent/submit/<host>
 Content-Type application/json
 
 [{"protocol": "tcp", "port": 22, "name": "ssh", "state": "open"}, {"protocol": "tcp", "port": 80, "name": "http", "state": "open"}]

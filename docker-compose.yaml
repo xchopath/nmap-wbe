@@ -2,58 +2,21 @@ version: '3'
 
 services:
 
-  mongodb:
-    image: mongo:6.0.4
-    container_name: mongodb-server
-    ports:
-      - 27017:27017
-    volumes:
-      - ./docker-system/mongodb/data:/data/db
-      - ./conf/mongodb:/etc/mongodb
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-    command: mongod --config /etc/mongodb/mongod.conf
-    networks:
-      - nmapwsnetwork
-
-  redis:
-    image: redis:7.0.8-bullseye
-    container_name: redis-server
-    ports:
-      - 6379:6379
-    volumes:
-      - ./docker-system/redis/data:/data
-    environment:
-      - REDIS_MAXMEMORY=${REDIS_MAXMEMORY}
-      - REDIS_MAXMEMORY_POLICY=${REDIS_MAXMEMORY_POLICY}
-    command: redis-server --bind 0.0.0.0 --requirepass ${REDIS_PASSWORD}
-    mem_limit: ${REDIS_MAXMEMORY}
-    networks:
-      - nmapwsnetwork
-
   nmap-wbe:
     build: .
     image: nmap-wbe:0.1
     container_name: nmap-wbe
     restart: always
     ports:
-      - 5001:5001
+      - ${LISTEN_PORT}:${LISTEN_PORT}
     environment:
       - LISTEN_ADDR=${LISTEN_ADDR}
       - LISTEN_PORT=${LISTEN_PORT}
       - APP_DEBUG=${APP_DEBUG}
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_NAME=${MONGODB_NAME}
-      - MONGODB_COLLECTION=${MONGODB_COLLECTION}
       - REDIS_URI=${REDIS_URI}
       - MIN_RESCAN_TIME=${MIN_RESCAN_TIME}
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - NMAP_ARGUMENTS=${NMAP_ARGUMENTS}
-    networks:
-      - nmapwsnetwork
-
-networks:
-  nmapwsnetwork:
-    name: nmapwsnetwork
-    driver: bridge
+    network_mode: "bridge"
